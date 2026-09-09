@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Maintenance Log</title>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Music Equipment Maintenance Log</h1>
+        <form id="maintenanceForm">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required><br><br>
+
+            <label for="guitarModel">Guitar Model:</label>
+            <input type="text" id="guitarModel" name="guitarModel" required><br><br>
+
+            <label for="maintenanceType">Maintenance Type:</label>
+            <select id="maintenanceType" name="maintenanceType" required>
+                <option value="">Select</option>
+                <option value="String Change">String Change</option>
+                <option value="Setup">Setup</option>
+                <option value="Cleaning">Cleaning</option>
+                <option value="Repair">Repair</option>
+            </select><br><br>
+
+            <label for="notes">Notes:</label><br>
+            <textarea id="notes" name="notes" rows="4" cols="50"></textarea><br><br>
+
+            <button type="submit">Add Entry</button>
+        </form>
+
+        <p id="statusMessage"></p> 
+
+        <h2>Maintenance Entries</h2>
+
+        <ul id="entriesList"></ul>
+
+        <script src="app.js"></script>
+</body>
+</html>
