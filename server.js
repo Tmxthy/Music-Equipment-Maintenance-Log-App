@@ -1,4 +1,16 @@
+require('dotenv').config();
+
 const express = require('express');
+const { Pool } = require('pg'); 
+
+const pool = new Pool({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'music_equipment_log',
+  password: process.env.DB_PASSWORD,
+  port: 5432, 
+});
+
 const cors = require('cors');
 const app = express();
 const port = 3000;
@@ -8,14 +20,40 @@ app.use(cors()); // ADD THIS (It must go before your routes!)
 app.use(express.json());
 
 // The Receiver (POST route)
-app.post('/api/logs', (req, res) => {
-  const incomingData = req.body;
-  console.log("New data received:", incomingData);
-  
-  res.json({
-    message: "Data received loud and clear!",
-    dataYouSent: incomingData
-  });
+// Notice we added 'async' here!
+app.post('/api/equipment', async (req, res) => {
+  try {
+    // 1. Grab the package from the frontend
+    const incomingData = req.body;
+    
+    // 2. Execute the secure database command
+    const newEquipment = await pool.query(
+      `INSERT INTO equipment (name, type, brand, model, serial_number, purchase_price, purchase_date, condition, notes) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+       RETURNING *`,
+      [
+        incomingData.name, 
+        incomingData.type, 
+        incomingData.brand, 
+        incomingData.model, 
+        incomingData.serialNumber, 
+        incomingData.purchasePrice, 
+        incomingData.purchaseDate, 
+        incomingData.condition, 
+        incomingData.notes
+      ]
+    );
+
+    // 3. Send the official database row back as the receipt
+    res.json({
+      message: "Equipment permanently saved to database!",
+      data: newEquipment.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ error: "Failed to save equipment" });
+  }
 });
 
 // The Power Switch

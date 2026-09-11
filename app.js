@@ -1,38 +1,43 @@
-// 1. Grab the form element from the HTML
-const form = document.getElementById('maintenanceForm');
+const form = document.getElementById('equipmentForm');
 
-// 2. Listen for the 'submit' event (when the "Add Entry" button is clicked)
 form.addEventListener('submit', async function(event) {
     
     // 3. Stop the page from automatically refreshing
     event.preventDefault();
 
     // 4. Gather the values from the input fields using their IDs
-    const dateValue = document.getElementById('date').value;
-    const modelValue = document.getElementById('guitarModel').value;
-    const typeValue = document.getElementById('maintenanceType').value;
+    const nameValue = document.getElementById('equipmentName').value;
+    const typeValue = document.getElementById('equipmentType').value;
+    const brandValue = document.getElementById('equipmentBrand').value;
+    const modelValue = document.getElementById('equipmentModel').value;
+    const serial_NumberValue = document.getElementById('serial_Number').value;
+    const purchasePriceValue = document.getElementById('purchasePrice').value;
+    const purchaseDateValue = document.getElementById('purchaseDate').value;
+    const conditionValue = document.getElementById('condition').value;
     const notesValue = document.getElementById('notes').value;
 
     // 5. Package everything into a clean JavaScript object
-    const newLog = {
-        date: dateValue,
+    const newEquipment = {
+        name: nameValue,
+        type: typeValue,
+        brand: brandValue,
         model: modelValue,
-        maintenanceType: typeValue,
+        serialNumber: serial_NumberValue,
+        purchasePrice: purchasePriceValue,
+        purchaseDate: purchaseDateValue,
+        condition: conditionValue,
         notes: notesValue
     };
-
-    // 6. Print it to the console to prove you successfully captured the data!
-    console.log("New Maintenance Log Captured:", newLog);
 
 
 // 2. Wrap your network request in a try/catch block to handle errors gracefully
     try {
-        const response = await fetch('http://localhost:3000/api/logs', {
+        const response = await fetch('http://localhost:3000/api/equipment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json' 
             },
-            body: JSON.stringify(newLog) 
+            body: JSON.stringify(newEquipment) 
         });
 
         const data = await response.json();
@@ -42,7 +47,7 @@ form.addEventListener('submit', async function(event) {
 
         // 2. Paint the text green and inject our success message
         messageBoard.style.color = 'green';
-        messageBoard.textContent = 'Maintenance log saved successfully!';
+        messageBoard.textContent = 'Equipment added successfully!';
 
         // 3. Now that we know it succeeded, wipe the form clean for the next entry
         form.reset();
