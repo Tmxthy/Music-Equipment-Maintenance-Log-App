@@ -29,6 +29,15 @@ form.addEventListener('submit', async function(event) {
         notes: notesValue
     };
 
+function showStatusMessage(text, color) {
+    const messageBoard = document.getElementById('statusMessage');
+    messageBoard.style.color = color;
+    messageBoard.textContent = text;
+
+    setTimeout(function() {
+        messageBoard.textContent = ''; 
+    }, 3000);
+}
 
 // 2. Wrap your network request in a try/catch block to handle errors gracefully
     try {
@@ -41,29 +50,36 @@ form.addEventListener('submit', async function(event) {
         });
 
         const data = await response.json();
+        console.log('Server response:', data);
         
-        // 1. Grab the blank billboard from the HTML
-        const messageBoard = document.getElementById('statusMessage');
-
-        // 2. Paint the text green and inject our success message
-        messageBoard.style.color = 'green';
-        messageBoard.textContent = 'Equipment added successfully!';
+        showStatusMessage('Equipment saved successfully!', 'green');
 
         // 3. Now that we know it succeeded, wipe the form clean for the next entry
         form.reset();
 
-        setTimeout(function() {
-            messageBoard.textContent = ''; 
-        }, 3000);
-
     } catch (error) {
         // If the internet crashes, show a red error on the screen instead of the console
-        const messageBoard = document.getElementById('statusMessage');
-        messageBoard.style.color = 'red';
-        messageBoard.textContent = 'Uh oh! Failed to save the log. Please try again.';
+        showStatusMessage('Uh oh! Failed to save the log. Please try again.', 'red');
 
-        setTimeout(function() {
-            messageBoard.textContent = ''; 
-        }, 3000);
     }
+    
+    loadEquipment(); // Call the function to fetch and log the equipment data after submission
 });
+
+async function loadEquipment() {
+    try {
+        // 2. Fetch the data (No options object needed for a simple GET!)
+        const response = await fetch('http://localhost:3000/api/equipment');
+        
+        // 3. Unpack the JSON
+        const data = await response.json();
+        
+        // 4. Print the entire database inventory to the console
+        console.log('Fetched equipment:', data);
+
+    } catch (error) {
+        console.error('Error fetching equipment:', error);
+    }
+}
+
+loadEquipment();

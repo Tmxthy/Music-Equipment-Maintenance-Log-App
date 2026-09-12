@@ -56,6 +56,17 @@ app.post('/api/equipment', async (req, res) => {
   }
 });
 
+app.get('/api/equipment', async (req, res) => { 
+  try {
+    const equipment = await pool.query('SELECT * FROM equipment ORDER BY id ASC');
+    res.json(equipment.rows);
+
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ error: "Failed to fetch equipment" });
+  }
+});
+
 // The Power Switch
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
