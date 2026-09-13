@@ -67,6 +67,75 @@ app.get('/api/equipment', async (req, res) => {
   }
 });
 
+// Notice the ':id' in the URL! This is called a URL Parameter.
+app.delete('/api/equipment/:id', async (req, res) => {
+  try {
+    // 1. Grab the ID out of the URL string
+    const targetId = req.params.id;
+
+    // 2. Tell PostgreSQL to delete that specific row
+    await pool.query('DELETE FROM equipment WHERE id = $1', [targetId]);
+
+    // 3. Send a simple success message back to the frontend
+    res.json({ message: "Item deleted successfully!" });
+
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ error: "Failed to delete equipment" });
+  }
+});
+
+// ==========================================
+// UPDATE ROUTE (The 'U' in CRUD)
+// ==========================================
+app.put('/api/equipment/:id', async (req, res) => {
+  try {
+    // 1. Grab the ID from the URL (Which locker are we opening?)
+    const targetId = req.params.id;
+
+    // 2. Grab the new data from the JSON package (What is the new data?)
+    const { 
+      name, type, brand, model, serial_number, 
+      purchase_date, purchase_price, condition, notes 
+    } = req.body;
+
+    // 3. The SQL UPDATE Command
+    // We set each column to a new $ variable, and use $10 for the ID at the end
+    const updateQuery = `
+      UPDATE equipment 
+      SET 
+        name = $1, 
+        type = $2, 
+        brand = $3, 
+        model = $4, 
+        serial_number = $5, 
+        purchase_date = $6, 
+        purchase_price = $7, 
+        condition = $8, 
+        notes = $9
+      WHERE id = $10
+      RETURNING *;
+    `;
+
+    // 4. Send the command and the 10 variables to PostgreSQL
+    const result = await pool.query(updateQuery, [
+      name, type, brand, model, serial_number, 
+      purchase_date, purchase_price, condition, notes, 
+      targetId
+    ]);
+
+    // 5. Tell the frontend we succeeded
+    res.json({ 
+      message: "Equipment updated successfully!", 
+      updatedItem: result.rows[0] 
+    });
+
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ error: "Failed to update equipment" });
+  }
+});
+
 // The Power Switch
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
