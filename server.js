@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const { Pool } = require('pg'); 
+const bcrypt = require('bcrypt');
 
 const pool = new Pool({
   user: 'postgres',
@@ -133,6 +134,40 @@ app.put('/api/equipment/:id', async (req, res) => {
   } catch (error) {
     console.error("Database error:", error.message);
     res.status(500).json({ error: "Failed to update equipment" });
+  }
+});
+
+// ==========================================
+// REGISTER ROUTE (Create a New User)
+// ==========================================
+app.post('/api/register', async (req, res) => {
+  try {
+    // 1. Unpack the email and password from the frontend
+    const { email, password } = req.body;
+
+    // 2. Scramble the password (the '10' means scramble it 10 times)
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // 3. The SQL Command: Save the email and the GIBBERISH password
+    const insertQuery = `
+      INSERT INTO users (email, password_hash) 
+      VALUES ($1, $2) 
+      RETURNING id, email;
+    `;
+
+    // 4. Send the array to PostgreSQL safely
+    const result = await pool.query(insertQuery, [email, hashedPassword]);
+
+    // 5. Send a success receipt back
+    res.status(201).json({ 
+      message: "User registered successfully!",
+      user: result.rows[0] 
+    });
+
+  } catch (error) {
+    console.error("Registration error:", error.message);
+    res.status(500).json({ error: "Failed to register user (Email might already exist)" });
   }
 });
 

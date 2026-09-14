@@ -11,22 +11,9 @@ CREATE TABLE equipment (
     notes TEXT
 );
 
-/*
- ID - SERIAL (PK)
-
-Equipment name - VARCHAR
-
-Equipment type - VARCHAR
-
-Brand - VARCHAR
-
-Model - VARCHAR
-
-Serial number - VARCHAR
-
-Purchase date - DATE
-
-Purchase price - DECIMAL
-
-Condition - VARCHAR 
-*/
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

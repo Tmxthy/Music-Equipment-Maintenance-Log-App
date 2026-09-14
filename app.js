@@ -21,7 +21,7 @@ form.addEventListener('submit', async function(event) {
     const notesValue = document.getElementById('notes').value;
 
     // 5. Package everything into a clean JavaScript object
-    const newEquipment = {
+    const formData = {
         name: nameValue,
         type: typeValue,
         brand: brandValue,
