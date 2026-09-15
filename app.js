@@ -1,3 +1,70 @@
+// ==========================================
+// 1. UI SETUP & TOGGLING
+// ==========================================
+const authSection = document.getElementById('auth-section');
+const appSection = document.getElementById('app-section');
+const loginBox = document.getElementById('login-box');
+const registerBox = document.getElementById('register-box');
+const authMessage = document.getElementById('auth-message');
+
+// Switch to Register Form
+document.getElementById('show-register').addEventListener('click', (e) => {
+  e.preventDefault(); // Stops the page from jumping
+  loginBox.style.display = 'none';
+  registerBox.style.display = 'block';
+  authMessage.textContent = ''; // Clear old errors
+});
+
+// Switch to Login Form
+document.getElementById('show-login').addEventListener('click', (e) => {
+  e.preventDefault();
+  registerBox.style.display = 'none';
+  loginBox.style.display = 'block';
+  authMessage.textContent = '';
+});
+
+// ==========================================
+// 2. LOGIN BUTTON LOGIC
+// ==========================================
+document.getElementById('login-btn').addEventListener('click', async () => {
+  // Grab what the user typed
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  try {
+    const response = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    // If the Bouncer (backend) rejects the login, show the error on the screen
+    if (!response.ok) {
+      authMessage.textContent = data.error;
+      return; 
+    }
+
+    // SUCCESS!
+    // 1. Save the VIP badge into the browser's pocket
+    localStorage.setItem('token', data.token);
+    
+    // 2. Hide the login screen, show the app screen
+    authSection.style.display = 'none';
+    appSection.style.display = 'block';
+    authMessage.textContent = '';
+
+    console.log("Logged in successfully! Token saved.");
+    
+    // 3. Now that we are in, tell the app to fetch the equipment!
+    loadEquipment(); 
+
+  } catch (err) {
+    authMessage.textContent = "Could not connect to server.";
+  }
+});
+
 const form = document.getElementById('equipmentForm');
 
 // NEW: Global memory variables

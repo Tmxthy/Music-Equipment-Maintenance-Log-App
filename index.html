@@ -7,63 +7,100 @@
     
 </head>
 <body>
-    <div class="container">
-        <h1>Music Equipment Maintenance Log</h1>
-        <form id="equipmentForm">
-            <label for="equipmentName">Equipment Name:</label>
-            <input type="text" id="equipmentName" name="equipmentName" required><br><br>
+    <!-- ========================================== -->
+    <!-- 1. AUTHENTICATION SCREEN (Visible first)     -->
+    <!-- ========================================== -->
+    <div id="auth-section">
+        <h1>Inventory Manager</h1>
+        
+        <!-- Login Form -->
+        <div id="login-box">
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button id="login-btn">Login</button>
+        <p>Don't have an account? <a href="#" id="show-register">Register here</a></p>
+        </div>
 
-            <label for="equipmentType">Equipment Type:</label>
-            <select id="equipmentType" name="equipmentType" required>
-                <option value="">Select</option>
-                <option value="Guitar">Guitar</option>
-                <option value="Bass">Bass</option>
-                <option value="Keyboard">Keyboard</option>
-                <option value="Drums">Drums</option>
-                <option value="Amplifier">Amplifier</option>
-                <option value="Microphone">Microphone</option>
-                <option value="Audio Interface">Audio Interface</option>
-                <option value="Effects Pedal">Effects Pedal</option>
-                <option value="Speaker">Speaker</option>
-                <option value="Cable">Cable</option>
-                <option value="Other">Other</option>
-            </select><br><br>
+        <!-- Register Form (Hidden by default) -->
+        <div id="register-box" style="display: none;">
+        <h2>Create Account</h2>
+        <input type="email" id="register-email" placeholder="Email" required>
+        <input type="password" id="register-password" placeholder="Password" required>
+        <button id="register-btn">Register</button>
+        <p>Already have an account? <a href="#" id="show-login">Login here</a></p>
+        </div>
+        
+        <!-- A place to show red error messages -->
+        <p id="auth-message" style="color: red;"></p>
+    </div>
+    
 
-            <label for="equipmentBrand">Equipment Brand:</label>
-            <input type="text" id="equipmentBrand" name="equipmentBrand" required><br><br>
+    <!-- ========================================== -->
+    <!-- 2. MAIN APP SCREEN (Hidden until logged in)  -->
+    <!-- ========================================== -->
+    <div id="app-section" style="display: none;">
+        <button id="logout-btn" style="float: right;">Logout</button>
 
-            <label for="equipmentModel">Equipment Model:</label>
-            <input type="text" id="equipmentModel" name="equipmentModel" required><br><br>
+        <div class="container">
+            <h1>Music Equipment Maintenance Log</h1>
+            <form id="equipmentForm">
+                <label for="equipmentName">Equipment Name:</label>
+                <input type="text" id="equipmentName" name="equipmentName" required><br><br>
 
-            <label for="serial_Number">Serial Number:</label>
-            <input type="text" id="serial_Number" name="serial_Number" required><br><br>
+                <label for="equipmentType">Equipment Type:</label>
+                <select id="equipmentType" name="equipmentType" required>
+                    <option value="">Select</option>
+                    <option value="Guitar">Guitar</option>
+                    <option value="Bass">Bass</option>
+                    <option value="Keyboard">Keyboard</option>
+                    <option value="Drums">Drums</option>
+                    <option value="Amplifier">Amplifier</option>
+                    <option value="Microphone">Microphone</option>
+                    <option value="Audio Interface">Audio Interface</option>
+                    <option value="Effects Pedal">Effects Pedal</option>
+                    <option value="Speaker">Speaker</option>
+                    <option value="Cable">Cable</option>
+                    <option value="Other">Other</option>
+                </select><br><br>
 
-            <label for="purchasePrice">Purchase Price:</label>
-            <input type="number" id="purchasePrice" name="purchasePrice" step="0.01" required><br><br>
-            
-            <label for="purchaseDate">Date:</label>
-            <input type="date" id="purchaseDate" name="purchaseDate" required><br><br>
+                <label for="equipmentBrand">Equipment Brand:</label>
+                <input type="text" id="equipmentBrand" name="equipmentBrand" required><br><br>
 
-            <label for="condition">Condition:</label>
-            <select id="condition" name="condition" required>
-                <option value="">Select</option>
-                <option value="New">New</option>
-                <option value="Good">Good</option>
-                <option value="Fair">Fair</option>
-                <option value="Poor">Poor</option>
-            </select><br><br>
+                <label for="equipmentModel">Equipment Model:</label>
+                <input type="text" id="equipmentModel" name="equipmentModel" required><br><br>
 
-            <label for="notes">Notes:</label><br>
-            <textarea id="notes" name="notes" rows="4" cols="50"></textarea><br><br>
+                <label for="serial_Number">Serial Number:</label>
+                <input type="text" id="serial_Number" name="serial_Number" required><br><br>
 
-            <button type="submit">Add Entry</button>
-        </form>
+                <label for="purchasePrice">Purchase Price:</label>
+                <input type="number" id="purchasePrice" name="purchasePrice" step="0.01" required><br><br>
+                
+                <label for="purchaseDate">Date:</label>
+                <input type="date" id="purchaseDate" name="purchaseDate" required><br><br>
 
-        <p id="statusMessage"></p> 
+                <label for="condition">Condition:</label>
+                <select id="condition" name="condition" required>
+                    <option value="">Select</option>
+                    <option value="New">New</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Poor">Poor</option>
+                </select><br><br>
 
-        <h2>Maintenance Entries</h2>
+                <label for="notes">Notes:</label><br>
+                <textarea id="notes" name="notes" rows="4" cols="50"></textarea><br><br>
 
-        <div id="equipmentList"></div>
+                <button type="submit">Add Entry</button>
+            </form>
+
+            <p id="statusMessage"></p> 
+
+            <h2>Maintenance Entries</h2>
+
+            <div id="equipmentList"></div>
+        </div>
+    </div>
 
         <script src="app.js"></script>
 </body>

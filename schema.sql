@@ -17,3 +17,5 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+email: "admin@test.com", password: "superSecretPassword123"

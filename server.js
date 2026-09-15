@@ -3,6 +3,43 @@ require('dotenv').config();
 const express = require('express');
 const { Pool } = require('pg'); 
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+// The secret key the server uses to sign the VIP badges.
+// (In a real production app, this is hidden in a .env file!)
+const JWT_SECRET = "super_secret_inventory_key_123";
+
+// ==========================================
+// THE BOUNCER (Authentication Middleware)
+// ==========================================
+function authenticateToken(req, res, next) {
+  // 1. Look at the request header for the VIP badge
+  // It usually looks like: "Bearer [long_string_of_gibberish]"
+  const authHeader = req.headers['authorization'];
+  
+  // Cut off the word "Bearer " and just grab the gibberish token
+  const token = authHeader && authHeader.split(' ')[1];
+
+  // 2. If there is no badge at all, kick them out
+  if (!token) {
+    return res.status(401).json({ error: "Access denied. No VIP badge found." });
+  }
+
+  // 3. Inspect the badge using our secret stamp
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      // The badge is fake, altered, or expired
+      return res.status(403).json({ error: "Invalid or expired badge." });
+    }
+
+    // 4. The badge is valid! 
+    // We attach the user's info to the request so the next route knows who they are.
+    req.user = user;
+    
+    // 5. Open the door and let them pass!
+    next(); 
+  });
+}
 
 const pool = new Pool({
   user: 'postgres',
@@ -22,7 +59,7 @@ app.use(express.json());
 
 // The Receiver (POST route)
 // Notice we added 'async' here!
-app.post('/api/equipment', async (req, res) => {
+app.post('/api/equipment', authenticateToken, async (req, res) => {
   try {
     // 1. Grab the package from the frontend
     const incomingData = req.body;
@@ -57,7 +94,7 @@ app.post('/api/equipment', async (req, res) => {
   }
 });
 
-app.get('/api/equipment', async (req, res) => { 
+app.get('/api/equipment', authenticateToken,async (req, res) => { 
   try {
     const equipment = await pool.query('SELECT * FROM equipment ORDER BY id ASC');
     res.json(equipment.rows);
@@ -69,7 +106,7 @@ app.get('/api/equipment', async (req, res) => {
 });
 
 // Notice the ':id' in the URL! This is called a URL Parameter.
-app.delete('/api/equipment/:id', async (req, res) => {
+app.delete('/api/equipment/:id', authenticateToken,async (req, res) => {
   try {
     // 1. Grab the ID out of the URL string
     const targetId = req.params.id;
@@ -89,7 +126,7 @@ app.delete('/api/equipment/:id', async (req, res) => {
 // ==========================================
 // UPDATE ROUTE (The 'U' in CRUD)
 // ==========================================
-app.put('/api/equipment/:id', async (req, res) => {
+app.put('/api/equipment/:id', authenticateToken, async (req, res) => {
   try {
     // 1. Grab the ID from the URL (Which locker are we opening?)
     const targetId = req.params.id;
@@ -168,6 +205,54 @@ app.post('/api/register', async (req, res) => {
   } catch (error) {
     console.error("Registration error:", error.message);
     res.status(500).json({ error: "Failed to register user (Email might already exist)" });
+  }
+});
+
+// ==========================================
+// LOGIN ROUTE (Authenticate a User)
+// ==========================================
+app.post('/api/login', async (req, res) => {
+  try {
+    // 1. Unpack the login credentials from the frontend
+    const { email, password } = req.body;
+
+    // 2. Search the database for this exact email
+    const userQuery = `SELECT * FROM users WHERE email = $1;`;
+    const result = await pool.query(userQuery, [email]);
+
+    // 3. SECURITY CHECK: Did we find a user?
+    if (result.rows.length === 0) {
+      // If the array is empty, the email doesn't exist. Kick them out.
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    
+    // Save the user data to a variable
+    const user = result.rows[0];
+
+    // 4. SECURITY CHECK: Do the passwords match?
+    // bcrypt.compare(rawPassword, hashedPassword)
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+
+    if (!isMatch) {
+      // Passwords don't match. Kick them out.
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // 5. Success! (We will add the VIP badge / JWT right here in the next step)
+    const token = jwt.sign(
+      { id: user.id, email: user.email }, 
+      JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
+    
+    res.json({ 
+      message: "Login successful!", 
+      user: { id: user.id, email: user.email } 
+    });
+
+  } catch (error) {
+    console.error("Login error:", error.message);
+    res.status(500).json({ error: "Server error during login" });
   }
 });
 
