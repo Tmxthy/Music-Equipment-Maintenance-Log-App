@@ -1,3 +1,13 @@
+function showStatusMessage(text, color) {
+        const messageBoard = document.getElementById('statusMessage');
+        messageBoard.style.color = color;
+        messageBoard.textContent = text;
+
+        setTimeout(function() {
+            messageBoard.textContent = ''; 
+        }, 3000);
+}   
+
 // ==========================================
 // 1. UI SETUP & TOGGLING
 // ==========================================
@@ -23,6 +33,8 @@ document.getElementById('show-login').addEventListener('click', (e) => {
   authMessage.textContent = '';
 });
 
+document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
 // ==========================================
 // 2. LOGIN BUTTON LOGIC
 // ==========================================
@@ -34,7 +46,7 @@ document.getElementById('login-btn').addEventListener('click', async () => {
   try {
     const response = await fetch('http://localhost:3000/api/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json'},
       body: JSON.stringify({ email, password })
     });
 
@@ -100,15 +112,6 @@ form.addEventListener('submit', async function(event) {
         notes: notesValue
     };
 
-    function showStatusMessage(text, color) {
-        const messageBoard = document.getElementById('statusMessage');
-        messageBoard.style.color = color;
-        messageBoard.textContent = text;
-
-        setTimeout(function() {
-            messageBoard.textContent = ''; 
-        }, 3000);
-    }
 
 // 2. Wrap your network request in a try/catch block to handle errors gracefully
     try {
@@ -123,9 +126,14 @@ form.addEventListener('submit', async function(event) {
         }
 
         // 3. Send the network request using the variables we just set
+        const token = localStorage.getItem('token');
+        
         const response = await fetch(url, {
             method: httpMethod,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${'token'}`
+            },
             body: JSON.stringify(formData)
         });
 
@@ -154,8 +162,20 @@ form.addEventListener('submit', async function(event) {
 
 async function loadEquipment() {
     try {
+        // 1. Reach into the browser's pocket and grab the saved token
+        const token = localStorage.getItem('token');
+        
         // 2. Fetch the data (No options object needed for a simple GET!)
-        const response = await fetch('http://localhost:3000/api/equipment');
+        const response = await fetch('http://localhost:3000/api/equipment', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // 3. Check if the Bouncer kicked us out
+        if (!response.ok) {
+            throw new Error("Not authorized. Please log in.");
+        }
         
         // 3. Unpack the JSON
         const data = await response.json();
@@ -199,10 +219,15 @@ async function deleteItem(id) {
         return; // Stop the function immediately if they click "Cancel"
     }
 
+    const token = localStorage.getItem('token');
+
     try {
         // 2. Send the DELETE request to the server, targeting the specific ID in the URL
         const response = await fetch(`http://localhost:3000/api/equipment/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
 
         // 3. If the server says it was successful, refresh the screen
@@ -248,6 +273,79 @@ function fillEditForm(id) {
 
     // 5. Scroll the user smoothly back to the top of the page to see the form
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Add this to your app.js
+function checkLoginStatus() {
+  const token = localStorage.getItem('token');
+
+  if (token) {
+    // If they HAVE a badge: Hide login, show the app!
+    authSection.style.display = 'none';
+    appSection.style.display = 'block';
+    
+    // Automatically load the data since we know they are logged in
+    loadEquipment(); 
+  } else {
+    // If they DON'T have a badge: Show login, hide the app!
+    authSection.style.display = 'block';
+    appSection.style.display = 'none';
+  }
+}
+
+async function handleRegister(event) {
+  // 1. Stop the page from reloading
+  event.preventDefault();
+
+  // 2. Grab the inputs (make sure these IDs match your HTML!)
+  const emailValue = document.getElementById('register-email').value;
+  const passwordValue = document.getElementById('register-password').value;
+
+  const newUser = {
+    email: emailValue,
+    password: passwordValue
+  };
+
+  try {
+    // 3. Send the data to the Ticket Booth (Backend) to create the account
+    const response = await fetch('http://localhost:3000/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify(newUser)
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // 4. Success! Tell the user, then teleport them to the Login screen
+      console.log("Account created:", data);
+      alert("Account created successfully! Please log in.");
+      
+      // Use the toggle function you fixed earlier!
+      showLogin(); 
+    } else {
+      alert("Registration failed: " + data.error);
+    }
+  } catch (error) {
+    console.error("Error during registration:", error);
+  }
+}
+
+
+function handleLogout() {
+  // 1. Throw the badge in the trash
+  localStorage.removeItem('token');
+  
+  // 2. Clear the equipment list from the screen (so the next person can't see it)
+  document.getElementById('equipmentList').innerHTML = '';
+  
+  // 3. Give the user some feedback
+  console.log("Logged out successfully!");
+  alert("You have been logged out.");
+  
+  checkLoginStatus(); // This will hide the app and show the login screen
 }
 
 loadEquipment();
