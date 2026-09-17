@@ -9,6 +9,8 @@ CREATE TABLE equipment (
     purchase_price DECIMAL(10, 2) NOT NULL,
     condition VARCHAR(255) NOT NULL,
     notes TEXT
+    ALTER TABLE equipment 
+    ADD COLUMN user_id INTEGER REFERENCES users(id);    
 );
 
 CREATE TABLE users (

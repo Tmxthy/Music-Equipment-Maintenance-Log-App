@@ -6,8 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // The secret key the server uses to sign the VIP badges.
-// (In a real production app, this is hidden in a .env file!)
-const JWT_SECRET = "super_secret_inventory_key_123";
+const JWT_SECRET = process.env.JWT_SECRET; 
 
 // ==========================================
 // THE BOUNCER (Authentication Middleware)
