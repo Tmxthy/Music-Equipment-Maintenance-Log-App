@@ -132,7 +132,7 @@ form.addEventListener('submit', async function(event) {
             method: httpMethod,
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${'token'}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(formData)
         });
@@ -157,7 +157,6 @@ form.addEventListener('submit', async function(event) {
         showStatusMessage('Failed to save equipment', 'red');
     }
 
-    loadEquipment(); // Call the function to fetch and log the equipment data after submission
 });
 
 async function loadEquipment() {
@@ -194,7 +193,8 @@ async function loadEquipment() {
                     <p><strong>Type:</strong> ${item.type}</p>
                     <p><strong>Condition:</strong> ${item.condition}</p>
                     <p><strong>Price:</strong> RM ${item.purchase_price}</p>
-                    
+                    <p><strong>Notes:</strong> ${item.notes}</p>
+
                     <button onclick="fillEditForm(${item.id})" style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; margin-right: 5px;">Edit</button>
                     
                     <button onclick="deleteItem(${item.id})" style="background-color: #ff4444; color: white; border: none; padding: 5px 10px; cursor: pointer;">Delete</button>
