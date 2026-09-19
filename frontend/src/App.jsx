@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import Dashboard from "./Dashboard";
 
 export default function App() {
   // THIS IS THE BRAIN OF YOUR APP
@@ -25,19 +26,13 @@ export default function App() {
       )}
 
       {currentScreen === "dashboard" && (
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-800">Welcome to the VIP Room!</h1>
-          <p className="text-slate-600 mt-2">Your equipment dashboard will go here.</p>
-          
-          <button 
-            onClick={() => {
-              localStorage.removeItem("token"); // Rip up the VIP badge
-              setCurrentScreen("login"); // Kick them back to the login screen
-            }}
-            className="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Logout
-          </button>
+        <div className="w-full min-h-screen bg-slate-100 flex py-10">
+            <Dashboard 
+              onLogout={() => {
+                localStorage.removeItem("token");
+                setCurrentScreen("login");
+              }} 
+            />
         </div>
       )}
 

@@ -20,9 +20,9 @@ export default function Register({onSwitch}) {
       const data = await response.json();
 
       if (response.ok) {
-        // 2. Success! Save the VIP badge into the browser's "wallet"
-        localStorage.setItem("token", data.token);
         alert("Registration successful! You can now log in.");
+
+        onSwitch(); // Switch to the login screen after successful registration
         
         // (Later, we will tell App.jsx to change the screen here)
       } else {
