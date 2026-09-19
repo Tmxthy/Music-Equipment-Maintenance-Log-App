@@ -64,6 +64,8 @@ app.post('/api/equipment', authenticateToken, async (req, res) => {
     const incomingData = req.body;
     const userId = req.user.id;
     
+    console.log("REACT SENT ME THIS DATA:", incomingData);
+
     // 2. Execute the secure database command
     const newEquipment = await pool.query(
       `INSERT INTO equipment (name, type, brand, model, serial_number, purchase_price, purchase_date, condition, notes, user_id) 
@@ -74,9 +76,9 @@ app.post('/api/equipment', authenticateToken, async (req, res) => {
         incomingData.type, 
         incomingData.brand, 
         incomingData.model, 
-        incomingData.serialNumber, 
-        incomingData.purchasePrice, 
-        incomingData.purchaseDate, 
+        incomingData.serial_number, 
+        incomingData.purchase_price, 
+        incomingData.purchase_date, 
         incomingData.condition, 
         incomingData.notes,
         userId
