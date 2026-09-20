@@ -63,8 +63,6 @@ app.post('/api/equipment', authenticateToken, async (req, res) => {
     // 1. Grab the package from the frontend
     const incomingData = req.body;
     const userId = req.user.id;
-    
-    console.log("REACT SENT ME THIS DATA:", incomingData);
 
     // 2. Execute the secure database command
     const newEquipment = await pool.query(

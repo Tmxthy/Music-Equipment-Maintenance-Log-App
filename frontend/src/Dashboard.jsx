@@ -68,6 +68,32 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
+  const handleDelete = async (targetId) => {
+    // 1. Add a safety check so users don't accidentally delete things
+    if (!window.confirm("Are you sure you want to delete this equipment?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      
+      // 2. Target the specific ID in the URL
+      const response = await fetch(`http://localhost:3000/api/equipment/${targetId}`, {
+        method: "DELETE",
+        headers: { 
+          "Authorization": `Bearer ${token}` 
+        }
+      });
+
+      if (response.ok) {
+        // 3. If successful, refresh the cards on the screen
+        fetchEquipment();
+      } else {
+        alert("Failed to delete equipment");
+      }
+    } catch (error) {
+      console.error("Error deleting equipment:", error);
+    }
+  };
+
   return (
     <div className="p-8 w-full max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
@@ -115,14 +141,27 @@ export default function Dashboard({ onLogout }) {
             <p className="text-slate-500">No equipment found. Add some!</p>
           ) : (
             equipmentList.map((item) => (
-              <div key={item.id} className="bg-white p-4 rounded-lg shadow border border-slate-200">
-                <h3 className="font-bold text-lg text-slate-800">{item.name}</h3>
-                <p className="text-slate-600">{item.brand} {item.model}</p>
-                <div className="mt-2 text-sm text-slate-500">
-                  <p>Type: {item.type}</p>
-                  <p>Price: RM {item.purchase_price}</p>
-                  <p>Condition: {item.condition}</p>
+              <div key={item.id} className="bg-white p-4 rounded-lg shadow border border-slate-200 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-lg text-slate-800">{item.name}</h3>
+                  <p className="text-slate-600">{item.brand} {item.model}</p>
+                  <div className="mt-2 text-sm text-slate-500">
+                    <p>Type: {item.type}</p>
+                    <p>Price: RM {item.purchase_price}</p>
+                    <p>Condition: {item.condition}</p>
+                  </div>
                 </div>
+                
+                {/* NEW: The Delete Button */}
+                <div className="mt-4 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                  <button 
+                    onClick={() => handleDelete(item.id)} 
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+                
               </div>
             ))
           )}
