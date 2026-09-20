@@ -10,6 +10,9 @@ export default function Dashboard({ onLogout }) {
     serial_number: "", purchase_date: "", purchase_price: "", condition: "", notes: ""
   });
 
+  // NEW: The Traffic Cop
+  const [editingId, setEditingId] = useState(null);
+
   useEffect(() => {
     fetchEquipment();
   }, []);
@@ -38,34 +41,58 @@ export default function Dashboard({ onLogout }) {
     });
   };
 
-  // 4. NEW: The function to send the new item to the backend
-  const handleAddEquipment = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3000/api/equipment", {
-        method: "POST",
-        headers: { 
+      
+      // 1. Check the traffic cop. Are we updating or creating?
+      const isUpdating = editingId !== null;
+      
+      // 2. Set the correct URL and Method based on the mode
+      const url = isUpdating 
+        ? `http://localhost:3000/api/equipment/${editingId}` 
+        : `http://localhost:3000/api/equipment`;
+        
+      const method = isUpdating ? "PUT" : "POST";
+
+      // 3. Send the request
+      const response = await fetch(url, {
+        method: method,
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(formData) // Send the whole form object
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        // Clear the form back to empty
+        // 4. Refresh the cards
+        fetchEquipment();
+        
+        // 5. Reset the form back to blank and turn off Edit Mode
         setFormData({
-          name: "", type: "", brand: "", model: "", 
-          serial_number: "", purchase_date: "", purchase_price: "", condition: "", notes: ""
+          name: "", type: "", brand: "", model: "", serial_number: "",
+          purchase_date: "", purchase_price: "", condition: "", notes: ""
         });
-        // Refresh the list to show the new item!
-        fetchEquipment(); 
+        setEditingId(null);
       } else {
-        alert("Failed to add equipment");
+        alert(isUpdating ? "Failed to update equipment" : "Failed to add equipment");
       }
     } catch (error) {
-      console.error("Error adding equipment:", error);
+      console.error("Error saving equipment:", error);
     }
+  };
+
+  const handleEditClick = (item) => {
+    // 1. Fill the form with the item's data
+    setFormData(item);
+    
+    // 2. Tell the traffic cop we are in "Update" mode for this specific ID
+    setEditingId(item.id);
+    
+    // Optional: Scroll to the top so the user sees the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (targetId) => {
@@ -107,9 +134,9 @@ export default function Dashboard({ onLogout }) {
         
         {/* LEFT SIDE: The Form */}
         <div className="bg-white p-6 rounded-lg shadow border border-slate-200 w-full lg:w-1/3 h-fit">
-          <h3 className="text-xl font-bold mb-4 text-slate-800">Add New Equipment</h3>
+          <h3 className="text-xl font-bold mb-4 text-slate-800">{editingId ? "Edit Equipment" : "Add New Equipment"}</h3>
           
-          <form onSubmit={handleAddEquipment} className="flex flex-col gap-3">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Item Name (e.g. Stratocaster)" className="border p-2 rounded" required />
             <input type="text" name="type" value={formData.type} onChange={handleChange} placeholder="Type (e.g. Guitar)" className="border p-2 rounded" required />
             <input type="text" name="brand" value={formData.brand} onChange={handleChange} placeholder="Brand" className="border p-2 rounded" />
@@ -130,7 +157,7 @@ export default function Dashboard({ onLogout }) {
             <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Notes..." className="border p-2 rounded"></textarea>
             
             <button type="submit" className="bg-emerald-600 text-white py-2 rounded mt-2 hover:bg-emerald-700 font-bold">
-              Add Equipment
+              {editingId ? "Update Equipment" : "Add Equipment"}
             </button>
           </form>
         </div>
@@ -152,8 +179,17 @@ export default function Dashboard({ onLogout }) {
                   </div>
                 </div>
                 
-                {/* NEW: The Delete Button */}
+                {/* The Button Container */}
                 <div className="mt-4 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                  
+                  {/* NEW: The Edit Button */}
+                  <button 
+                    onClick={() => handleEditClick(item)} 
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
+                  >
+                    Edit
+                  </button>
+                  
                   <button 
                     onClick={() => handleDelete(item.id)} 
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
