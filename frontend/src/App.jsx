@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Dashboard from "./Dashboard";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   // THIS IS THE BRAIN OF YOUR APP
