@@ -26,7 +26,7 @@ export default function App() {
       )}
 
       {currentScreen === "dashboard" && (
-        <div className="w-full min-h-screen bg-slate-100 flex py-10">
+        <div className="w-full min-h-screen bg-slate-900 flex py-10">
             <Dashboard 
               onLogout={() => {
                 localStorage.removeItem("token");

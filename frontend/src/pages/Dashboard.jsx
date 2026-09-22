@@ -124,7 +124,7 @@ export default function Dashboard({ onLogout }) {
   };
 
   return (
-    <div className="p-8 w-full max-w-6xl mx-auto">
+    <div className="w-full min-h-screen bg-slate-900 text-slate-200 p-8">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold text-slate-800">Equipment Dashboard</h2>
         <button onClick={onLogout} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
