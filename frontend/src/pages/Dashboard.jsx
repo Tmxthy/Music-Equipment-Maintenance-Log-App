@@ -1,10 +1,13 @@
 import EquipmentCard from '../components/EquipmentCard';
 import EquipmentForm from '../components/EquipmentForm';
+import MaintenanceLog from '../pages/MaintenanceLog';
 import { useState, useEffect } from "react";
 
 export default function Dashboard({ onLogout }) {
   // 1. The memory for the database rows
   const [equipmentList, setEquipmentList] = useState([]);
+
+  const [maintenanceItem, setMaintenanceItem] = useState(null);
 
   // 2. NEW: The memory for the new form! Starts empty.
   const [formData, setFormData] = useState({
@@ -149,12 +152,20 @@ export default function Dashboard({ onLogout }) {
               key={item.id} 
               item={item} 
               onEdit={handleEditClick} 
-              onDelete={handleDelete} 
+              onDelete={handleDelete}
+              onOpenMaintenance={(item) => setMaintenanceItem(item)} 
             />
           ))}
         </div>
 
       </div>
+
+      {maintenanceItem && (
+        <MaintenanceLog 
+          equipment={maintenanceItem} 
+          onClose={() => setMaintenanceItem(null)} 
+        />
+      )}
     </div>
   );
 }

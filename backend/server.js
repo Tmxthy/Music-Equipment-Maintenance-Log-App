@@ -108,6 +108,67 @@ app.get('/api/equipment', authenticateToken,async (req, res) => {
   }
 });
 
+// ==========================================
+// VERTICAL SLICE 2: MAINTENANCE ROUTES
+// ==========================================
+
+// ADD a Maintenance Record (POST)
+app.post('/api/equipment/:equipmentId/maintenance', authenticateToken, async (req, res) => {
+  try {
+    // Grab the equipment ID straight from the URL
+    const equipmentId = req.params.equipmentId; 
+    
+    // Grab the form data from the incoming package
+    const { service_date, description, cost, performed_by } = req.body;
+
+    const insertQuery = `
+      INSERT INTO maintenance_records (equipment_id, service_date, description, cost, performed_by) 
+      VALUES ($1, $2, $3, $4, $5) 
+      RETURNING *;
+    `;
+
+    const result = await pool.query(insertQuery, [
+      equipmentId, 
+      service_date, 
+      description, 
+      cost, 
+      performed_by
+    ]);
+
+    res.status(201).json({
+      message: "Maintenance log saved!",
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ error: "Failed to save maintenance record." });
+  }
+});
+
+
+// GET Maintenance Records for a specific item (GET)
+app.get('/api/equipment/:equipmentId/maintenance', authenticateToken, async (req, res) => {
+  try {
+    const equipmentId = req.params.equipmentId;
+
+    // We use ORDER BY service_date DESC to show the newest maintenance at the top!
+    const getQuery = `
+      SELECT * FROM maintenance_records 
+      WHERE equipment_id = $1 
+      ORDER BY service_date DESC;
+    `;
+
+    const result = await pool.query(getQuery, [equipmentId]);
+    
+    res.json(result.rows);
+
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ error: "Failed to fetch maintenance records." });
+  }
+});
+
 // Notice the ':id' in the URL! This is called a URL Parameter.
 app.delete('/api/equipment/:id', authenticateToken,async (req, res) => {
   try {

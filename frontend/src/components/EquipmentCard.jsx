@@ -1,4 +1,4 @@
-const EquipmentCard = ({ item, onEdit, onDelete }) => {
+const EquipmentCard = ({ item, onEdit, onDelete, onOpenMaintenance }) => {
   // We will pull these from the database later. For now, we simulate them.
   const status = item.condition || 'Gig Ready'; 
   const isNeedsMaintenance = status === 'Needs Maintenance';
@@ -47,6 +47,14 @@ const EquipmentCard = ({ item, onEdit, onDelete }) => {
         >
           Edit Details
         </button>
+
+        {/* NEW MAINTENANCE BUTTON */}
+        <button 
+          onClick={() => onOpenMaintenance(item)} 
+          className="bg-indigo-600/50 text-indigo-200 px-3 py-1 rounded text-sm hover:bg-indigo-600 transition border border-indigo-500/30">
+          Maintenance
+        </button>
+
         <button 
           onClick={() => onDelete(item.id)} 
           className="flex-1 bg-red-900/20 hover:bg-red-900/40 text-red-400 py-2.5 rounded-lg text-sm font-semibold transition-colors"

@@ -20,4 +20,13 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE maintenance_records (
+    id SERIAL PRIMARY KEY,
+    equipment_id INTEGER REFERENCES equipment(id) ON DELETE CASCADE,
+    service_date DATE NOT NULL,
+    description TEXT NOT NULL,
+    cost NUMERIC(10, 2),
+    performed_by VARCHAR(255)
+);
+
 email: "admin@test.com", password: "superSecretPassword123"
