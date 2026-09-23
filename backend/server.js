@@ -322,6 +322,36 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// 3. EDIT a Maintenance Record (PUT)
+app.put('/api/equipment/:equipmentId/maintenance/:recordId', authenticateToken, async (req, res) => {
+  try {
+    const { recordId } = req.params;
+    const { service_date, description, cost, performed_by, status } = req.body;
+
+    const updateQuery = `
+      UPDATE maintenance_records 
+      SET service_date = $1, description = $2, cost = $3, performed_by = $4, status = $5
+      WHERE id = $6 
+      RETURNING *;
+    `;
+
+    const result = await pool.query(updateQuery, [
+      service_date, 
+      description, 
+      cost || 0, 
+      performed_by, 
+      status, 
+      recordId
+    ]);
+
+    res.json({ message: "Record updated!", data: result.rows[0] });
+
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ error: "Failed to update record." });
+  }
+});
+
 // The Power Switch
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

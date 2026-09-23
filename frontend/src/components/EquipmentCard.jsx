@@ -51,7 +51,8 @@ const EquipmentCard = ({ item, onEdit, onDelete, onOpenMaintenance }) => {
         {/* NEW MAINTENANCE BUTTON */}
         <button 
           onClick={() => onOpenMaintenance(item)} 
-          className="bg-indigo-600/50 text-indigo-200 px-3 py-1 rounded text-sm hover:bg-indigo-600 transition border border-indigo-500/30">
+          className="bg-indigo-600/50 text-indigo-200 px-3 py-1 rounded text-sm hover:bg-indigo-600 transition border border-indigo-500/30"
+        >
           Maintenance
         </button>
 
