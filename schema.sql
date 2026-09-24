@@ -27,6 +27,8 @@ CREATE TABLE maintenance_records (
     description TEXT NOT NULL,
     cost NUMERIC(10, 2),
     performed_by VARCHAR(255)
+    ALTER TABLE maintenance_records 
+ADD COLUMN status VARCHAR(20) DEFAULT 'Completed';
 );
 
 email: "admin@test.com", password: "superSecretPassword123"

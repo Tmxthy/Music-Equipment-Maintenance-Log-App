@@ -1,69 +1,158 @@
-const EquipmentCard = ({ item, onEdit, onDelete, onOpenMaintenance }) => {
-  // We will pull these from the database later. For now, we simulate them.
-  const status = item.condition || 'Gig Ready'; 
-  const isNeedsMaintenance = status === 'Needs Maintenance';
-  
-  // Dynamic color for the status badge (Green for good, Amber/Red for bad)
-  const badgeColor = isNeedsMaintenance 
-    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
-    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+import React, { useState, useEffect } from 'react';
+import MaintenanceLog from '../pages/MaintenanceLog';
+
+const EquipmentCard = ({item, onEdit, onDelete }) => {
+  const [logs, setLogs] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLog, setEditingLog] = useState(null);
+
+  const fetchLogs = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`http://localhost:3000/api/equipment/${item.id}/maintenance`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setLogs(data);
+    } catch (err) {
+      console.error("Failed to fetch logs");
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [item.id]);
+
+  const handleDeleteLog = async (logId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this log?");
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      await fetch(`http://localhost:3000/api/equipment/${item.id}/maintenance/${logId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchLogs();
+    } catch (err) {
+      console.error("Failed to delete log");
+    }
+  };
+
+  const handleAddClick = () => {
+    setEditingLog(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditClick = (log) => {
+    setEditingLog(log);
+    setIsModalOpen(true);
+  };
+
+  // Get today's date once for comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg flex flex-col justify-between hover:border-slate-500 transition-colors duration-200">
+    <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex flex-col gap-4 shadow-lg">
       
-      {/* Top Section: Header & Badge */}
-      <div>
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h3 className="text-xl font-bold text-slate-100 tracking-tight">{item.name}</h3>
-            <p className="text-sm font-medium text-slate-400 mt-1">
-              {item.brand} <span className="text-slate-600 mx-1">•</span> {item.type}
-            </p>
-          </div>
-          {/* Status Badge */}
-          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${badgeColor}`}>
-            {status}
-          </span>
+      {/* Top: Equipment Info */}
+      <div className="border-b border-slate-700 pb-3 flex justify-between items-start">
+        <div>
+          <h2 className="text-xl font-bold text-slate-100">{item.brand} {item.model}</h2>
+          <p className="text-slate-400 capitalize">{item.type} • {item.condition}</p>
         </div>
+      </div>
+
+      {/* Middle: Maintenance History List */}
+      <div className="flex-1 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+        <h3 className="text-sm font-semibold text-slate-300 mb-3">Maintenance Log</h3>
         
-        {/* Middle Section: Technical Specs Grid */}
-        <div className="grid grid-cols-2 gap-y-4 gap-x-4 mb-6 mt-6 p-4 bg-slate-900/50 rounded-lg">
-           <div>
-             <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Serial No.</p>
-             <p className="text-sm text-slate-300 font-mono">{item.serial_number || 'UNKNOWN'}</p>
-           </div>
-           <div>
-             <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Last Serviced</p>
-             <p className="text-sm text-slate-300">{item.last_serviced || 'N/A'}</p>
-           </div>
-        </div>
+        {logs.length === 0 ? (
+          <p className="text-sm text-slate-500 italic">No maintenance records yet.</p>
+        ) : (
+          <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2">
+            {logs.map(log => {
+              // --- PER-LOG RED HIGHLIGHT LOGIC ---
+              const serviceDate = new Date(log.service_date);
+              serviceDate.setHours(0, 0, 0, 0);
+              
+              const isLogOverdue = log.status === 'Scheduled' && serviceDate < today;
+              
+              // Change the box styling if overdue
+              const boxClass = isLogOverdue 
+                ? "bg-rose-950/30 p-3 rounded border border-rose-500 flex flex-col gap-2" 
+                : "bg-slate-800 p-3 rounded border border-slate-600 flex flex-col gap-2";
+
+              // Change the pill styling if overdue
+              const badgeClass = log.status === 'Scheduled'
+                ? isLogOverdue 
+                  ? "bg-rose-500/20 text-rose-400 animate-pulse" // Overdue!
+                  : "bg-amber-500/20 text-amber-400"             // Upcoming
+                : "bg-emerald-500/20 text-emerald-400";          // Completed
+
+              return (
+                <li key={log.id} className={boxClass}>
+                  <div className="flex justify-between items-start">
+                    <p className="text-sm font-medium text-slate-200">
+                      {isLogOverdue && <span className="mr-2">⚠️</span>}
+                      {log.description}
+                    </p>
+                    <span className={`text-xs font-bold px-2 py-1 rounded ${badgeClass}`}>
+                      {isLogOverdue ? 'Overdue' : (log.status || 'Completed')}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-1">
+                    <p className={`text-xs ${isLogOverdue ? 'text-rose-400/80 font-bold' : 'text-slate-400'}`}>
+                      {isLogOverdue ? 'Due: ' : ''}{new Date(log.service_date).toLocaleDateString()}
+                    </p>
+                    <div className="flex gap-3">
+                      <button onClick={() => handleEditClick(log)} className="text-blue-400 text-xs hover:text-blue-300 transition">Edit</button>
+                      <button onClick={() => handleDeleteLog(log.id)} className="text-rose-400 text-xs hover:text-rose-300 transition">Delete</button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
 
-      {/* Bottom Section: Action Buttons */}
-      <div className="flex space-x-3 pt-4 border-t border-slate-700/70">
-        <button 
-          onClick={() => onEdit(item)} 
-          className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2.5 rounded-lg text-sm font-semibold transition-colors"
-        >
-          Edit Details
-        </button>
+      {/* Bottom: Add Button */}
+      <button 
+        onClick={handleAddClick}
+        className="w-full bg-emerald-600 text-white font-bold py-2 rounded hover:bg-emerald-500 transition shadow-md"
+      >
+        Add Maintenance Log
+      </button>
 
-        {/* NEW MAINTENANCE BUTTON */}
-        <button 
-          onClick={() => onOpenMaintenance(item)} 
-          className="bg-indigo-600/50 text-indigo-200 px-3 py-1 rounded text-sm hover:bg-indigo-600 transition border border-indigo-500/30"
-        >
-          Maintenance
-        </button>
+      <button 
+        onClick={() => onEdit(item)}
+        className="flex-1 bg-slate-700 text-slate-200 font-bold py-2 rounded hover:bg-slate-600 transition shadow-md"
+      >
+        Edit
+      </button>
 
-        <button 
-          onClick={() => onDelete(item.id)} 
-          className="flex-1 bg-red-900/20 hover:bg-red-900/40 text-red-400 py-2.5 rounded-lg text-sm font-semibold transition-colors"
-        >
-          Delete
-        </button>
-      </div>
-      
+      <button 
+        onClick={() => onDelete(item.id)}
+        className="flex-1 bg-rose-600/80 text-white font-bold py-2 rounded hover:bg-rose-600 transition shadow-md"
+      >
+        Delete
+      </button>
+
+      {/* The Pop-Up Modal */}
+      {isModalOpen && (
+        <MaintenanceLog 
+          key={item.id}
+          equipment={item} 
+          existingLog={editingLog} 
+          onClose={() => {
+            setIsModalOpen(false);
+            fetchLogs(); 
+          }} 
+        />
+      )}
     </div>
   );
 };
