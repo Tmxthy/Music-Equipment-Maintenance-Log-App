@@ -144,7 +144,6 @@ const EquipmentCard = ({item, onEdit, onDelete }) => {
       {/* The Pop-Up Modal */}
       {isModalOpen && (
         <MaintenanceLog 
-          key={item.id}
           equipment={item} 
           existingLog={editingLog} 
           onClose={() => {

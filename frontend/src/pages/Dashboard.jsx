@@ -149,6 +149,7 @@ export default function Dashboard({ onLogout }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {equipmentList.map(item => (
             <EquipmentCard 
+              key={item.id} //key is a reserved, secret word that belongs exclusively to React's internal brain.
               item={item} 
               onEdit={handleEditClick} 
               onDelete={handleDelete}
